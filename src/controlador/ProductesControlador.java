@@ -53,8 +53,6 @@ public class ProductesControlador {
     @FXML private DatePicker fiCatalegInput;
     @FXML private ComboBox<String> tipusInput;
     @FXML private TextField idProductoListaPack;
-
-    
     
     @FXML private TextField precioVentaPacksInput;
     @FXML private Label labelPrecioVenta;
@@ -93,7 +91,8 @@ public class ProductesControlador {
 
 
 	@SuppressWarnings({ "unused", "unused" })
-	@FXML private void onKeyPressedId(KeyEvent e) throws IOException {
+	@FXML 
+	private void onKeyPressedId(KeyEvent e) throws IOException {
 		
 		if (e.getCode() == KeyCode.ENTER || e.getCode() == KeyCode.TAB){
 			
@@ -194,6 +193,8 @@ public class ProductesControlador {
 				producte.setPreu_venda( Double.parseDouble(precioVentaInput.getText() ) );		
 				producte.setStock( Integer.parseInt(inputStockProductoInput.getText() ) );	
 				ProductesDAO.afegirProducte(producte, idProducteInput.getText());
+				ProductesDAO.save(producte);
+
 				limpiarFormulario();
 				producte.imprimir();
 				}
@@ -399,7 +400,20 @@ public class ProductesControlador {
 		iniciCatalegInput.setValue(null);
 		fiCatalegInput.setValue(null);
 	}
-    
+
+	/*
+	@Override
+	public void stop() throws Exception {
+		// TODO Auto-generated method stub
+		super.stop();
+		
+		try {
+			if (conexionBD != null) conexionBD.close();
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+    */
 
     @FXML
     void initialize() {

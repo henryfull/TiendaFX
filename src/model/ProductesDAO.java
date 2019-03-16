@@ -10,14 +10,27 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.HashMap;
 
 import model.ProducteAbstract;
 import model.paks;
+import model.Producte;
 
 public class ProductesDAO {
 	
+	private static Connection conexionBD;
+
+	
+	
+	public ProductesDAO(Connection conexionBD) {
+		this.conexionBD = conexionBD;
+	}
+
 	static BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
 	
 	public static HashMap<String, ProducteAbstract> TotsProductes = new HashMap<String, ProducteAbstract>();
@@ -31,9 +44,10 @@ public class ProductesDAO {
 	public static void afegirProducte(ProducteAbstract producte, String keyTotsProductes) {
 		
 		
+		
 		if(TotsProductes.get(keyTotsProductes) != null) {			
 
-			TotsProductes.put(producte.getIdProducte(), producte);
+			TotsProductes.put(keyTotsProductes, producte);
 
 		}
 		else {
@@ -41,8 +55,108 @@ public class ProductesDAO {
 
 		}
 		
+		/*
+		try {
+
+			String sql = "";
+			Statement stmt = conexionBD.createStatement();
+
+			if (find(producte.getIdProducte()) == null){
+				
+				sql = "INSERT INTO producte (idproductes, nom, dataInici, dataFinal, preu_venda, preu_compra, stock, idproveidors  ) VALUES (" +
+						
+						producte.getIdProducte() + "," + 
+						producte.getNom() + "," + 
+						producte.getDataInici() + "," + 
+						producte.getDataFinal() + "," +
+						
+						
+						")";
+				
+				
+				
+			} else{
+				sql = "UPDATE persones SET nom='" + persona.getNom() + "',apellidos='" + persona.getApellidos() 
+				+ "',email='" + persona.getEmail() + "',telefon='" + persona.getTelefon() + "'"
+				+ " WHERE id=" + persona.getId();
+			}
+			int rows = stmt.executeUpdate(sql);
+			if (rows == 1) return true;
+			else return false;
+
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+		return false;
+		*/
 
 		
+	}
+	public static boolean save(Producte producte){
+
+		try {
+
+			String sql = "";
+			System.out.println(conexionBD);
+			
+			Statement stmt = conexionBD.createStatement();
+			
+			System.out.println(stmt);
+			
+			if (find(producte.getIdProducte()) == null){
+				
+				sql = "INSERT INTO producte (idproductes, nom, dataInici, dataFinal, preu_venda, preu_compra, stock, idproveidors  ) VALUES (" +
+						
+					producte.getIdProducte() + "," + 
+					producte.getNom() + "," + 
+					producte.getDataInici() + "," + 
+					producte.getDataFinal() + "," +
+					producte.getPreu_venda() + "," +
+					producte.getPreu_compra() + "," +
+					producte.getStock() + "," +
+					"null"  + ")";
+				
+				
+			} else{
+				sql = "UPDATE producte SET nom='" + producte.getNom() + 
+						"',dataInici='" + producte.getDataInici() + 
+						"',dataFinal='" + producte.getDataFinal() + 
+						"',preu_venda='" + producte.getPreu_venda() + 
+						"',preu_compra='" + producte.getPreu_compra() + 
+						"',stock='" + producte.getStock() +
+						"',idproveidors='" + "null" + 
+						"'"
+				+ " WHERE idproductes=" + producte.getIdProducte();
+			}
+			int rows = stmt.executeUpdate(sql);
+			if (rows == 1) return true;
+			else return false;
+
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+		return false;
+	}
+	
+	
+	public static Producte find(String id){
+
+		if (id == null || id.equals("")){
+			return null;
+		}
+
+		Producte p = null;
+		try {
+			Statement stmt = conexionBD.createStatement();
+			ResultSet result = stmt.executeQuery("SELECT * FROM persones WHERE id = " + id);
+			if (result.next()) {
+		//		p = new Producte(result.getInt("id"), result.getString("nom"), result.getString("apellidos"),result.getString("email"),result.getString("telefon"));
+			}
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+
+		return p;
 	}
 
 
