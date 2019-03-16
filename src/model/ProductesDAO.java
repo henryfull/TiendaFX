@@ -161,7 +161,8 @@ public class ProductesDAO {
 				 p.setIdProducte(result.getString("idproductes"));
 				 p.setNom(result.getString("nom"));
 				 p.setDescripcio(result.getString("descripcio"));
-				 p.setDataInici(result.getDate("dataInici"));
+				 p.setDataInici( result.getObject("dataInici", LocalDate.class));
+				 p.setDataFinal( result.getObject("dataFinal", LocalDate.class));
 				 p.setPreu_compra(result.getInt("preu_compra"));
 				 p.setPreu_venda(result.getInt("preu_venda"));
 				 p.setStock(result.getInt("stock"));

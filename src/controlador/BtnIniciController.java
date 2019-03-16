@@ -107,6 +107,7 @@ public class BtnIniciController extends Application {
 			});
 
 		} else if (e.getSource() == btnSortir) {
+			stop();
 			Platform.exit();
 		}
 
