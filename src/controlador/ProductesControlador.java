@@ -100,6 +100,7 @@ public class ProductesControlador {
 			paks packs = new paks();
 
 			ProducteAbstract Object = ProductesDAO.returnProduct(idProducteInput.getText());
+			Object = ProductesDAO.find(idProducteInput.getText());
 			
 			if(Object instanceof Producte) {
 				
@@ -312,7 +313,9 @@ public class ProductesControlador {
 		
 		if(isDatosValidos()){
 			Producte producte = new Producte();
-			if( ProductesDAO.borrarProducte(producte, idProducteInput.getText()) ){
+	//		if( ProductesDAO.borrarProducte(producte, idProducteInput.getText()) ){
+			if( ProductesDAO.borrarProducte( idProducteInput.getText() )){
+
 				limpiarFormulario();
 				producte.imprimir();
 			}
