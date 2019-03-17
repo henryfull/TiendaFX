@@ -97,7 +97,7 @@ public class ProductesDAO {
 		}
 	}
 
-	public static boolean save(Producte producte) {
+	public static boolean saveProducte(Producte producte) {
 		try {
 
 			String sql = "";
@@ -106,7 +106,7 @@ public class ProductesDAO {
 			conexionBD = conexion.getConnection();
 			Statement stmt = conexionBD.createStatement();
 
-			if (find(producte.getIdProducte()) == null) {
+			if (findProduct(producte.getIdProducte()) == null) {
 		
 				sql = "INSERT INTO producte (idproductes, nom,descripcio, dataInici, dataFinal, preu_venda, preu_compra, stock  ) VALUES \n" + 
 						" ( '"+producte.getIdProducte()+"', '"+producte.getNom()+"' , '"+producte.getDescripcio()+"', '"+producte.getDataInici()+"', '"+producte.getDataFinal()+"', "+ producte.getPreu_venda()+ ", "+producte.getPreu_compra()+", "+producte.getStock()+"  )";
@@ -140,8 +140,165 @@ public class ProductesDAO {
 		}
 		return false;
 	}
+	
+	public static boolean savePacks(paks producte) {
+		try {
 
+			String sql = "";
+
+			conexion = new conexion();
+			conexionBD = conexion.getConnection();
+			Statement stmt = conexionBD.createStatement();
+
+			if (find(producte.getIdProducte()) == null) {
+		
+				sql = "INSERT INTO packs (idproductes, nom,descripcio, dataInici, dataFinal, preu_venda  ) VALUES \n" + 
+						" ( '"+producte.getIdProducte()+"', '"+producte.getNom()+"' , '"+producte.getDescripcio()+"', '"+producte.getDataInici()+"', '"+producte.getDataFinal()+"', "+ producte.getPreu_venda()+ " )";
+			} 
+			
+			else {
+				
+				producte.imprimir();
+				
+				sql = "UPDATE packs SET nom='" + producte.getNom() + "'" +
+						",dataInici='" + producte.getDataInici() + "'" +
+						",dataFinal='" + producte.getDataFinal() + "'" +
+						",preu_venda=" + producte.getPreu_venda() + 
+						" WHERE idproductes=" + "'" +producte.getIdProducte() +"'";
+				
+			}
+			System.out.println(sql);
+
+			int rows = stmt.executeUpdate(sql);
+			if (rows == 1)
+				return true;
+			else
+				return false;
+
+		} catch (SQLException e) {
+			System.out.println("error insert o update" + e.getMessage());
+		}
+		return false;
+	}
+	public static boolean saveProductsPacks(String idpacks, String idproducte) {
+		System.out.println("hola mundo");
+		try {
+
+			String sql = "";
+
+			conexion = new conexion();
+			conexionBD = conexion.getConnection();
+			Statement stmt = conexionBD.createStatement();
+			
+			if (find(idpacks) == null) {
+		
+				sql = "INSERT INTO listaproductes (idpacks, idproductes ) VALUES \n" + 
+						" ( '"+idpacks+"', '"+idproducte+"'  )";
+			} 
+			else {
+				sql = "UPDATE listaproductes SET idproductes='" + idproducte + "'" +
+						" WHERE idpacks=" + "'" +idpacks +"'";
+			}
+			
+			System.out.println("linea 202 " + sql);
+
+			int rows = stmt.executeUpdate(sql);
+			if (rows == 1)
+				return true;
+			else
+				return false;
+
+		} catch (SQLException e) {
+			System.out.println("error insert o update" + e.getMessage());
+		}
+		return false;
+	}
+	
+	public static ResultSet findProductsPacks(String id) {
+		conexion = new conexion();
+		conexionBD = conexion.getConnection();
+		ResultSet result = null;
+		if (id == null || id.equals("")) {
+			return null;
+		}
+
+		Producte p = null;
+		try {
+			Statement stmt = conexionBD.createStatement();
+			result = stmt.executeQuery("SELECT idproducte FROM listaproductes WHERE idpacks = " + "'"+ id +"'");
+			
+		} catch (SQLException e)	 {
+			System.out.println("error de busqueda: " + e.getMessage());
+		}
+
+		return result;
+	}
+	
+	
+	
 	public static Producte find(String id) {
+		conexion = new conexion();
+		conexionBD = conexion.getConnection();
+
+		if (id == null || id.equals("")) {
+			return null;
+		}
+
+		Producte p = null;
+		try {
+			Statement stmt = conexionBD.createStatement();
+			ResultSet result = stmt.executeQuery("SELECT * FROM producteabstract WHERE idproductes = " + "'"+ id +"'");
+			if (result.next()) {
+				
+				System.out.println("buscando " + result.getString("idproductes"));
+		
+				p = new Producte();
+				p.setIdProducte(result.getString("idproductes"));
+				 
+
+			}
+		} catch (SQLException e) {
+			System.out.println("error de busqueda: " + e.getMessage());
+		}
+
+		return p;
+	}
+	
+	public static Producte findPacks(String id) {
+		conexion = new conexion();
+		conexionBD = conexion.getConnection();
+
+		if (id == null || id.equals("")) {
+			return null;
+		}
+
+		Producte p = null;
+		try {
+			Statement stmt = conexionBD.createStatement();
+			ResultSet result = stmt.executeQuery("SELECT * FROM packs WHERE idproductes = " + "'"+ id +"'");
+			if (result.next()) {
+				
+				System.out.println("buscando " + result.getString("idproductes"));
+				
+				p = new Producte();
+				 p.setIdProducte(result.getString("idproductes"));
+				 p.setNom(result.getString("nom"));
+				 p.setDescripcio(result.getString("descripcio"));
+				 p.setDataInici( result.getObject("dataInici", LocalDate.class));
+				 p.setDataFinal( result.getObject("dataFinal", LocalDate.class));
+				 p.setPreu_venda(result.getInt("preu_venda"));
+				 
+
+			}
+		} catch (SQLException e) {
+			System.out.println("error de busqueda: " + e.getMessage());
+		}
+
+		return p;
+	}
+	
+
+	public static Producte findProduct(String id) {
 		conexion = new conexion();
 		conexionBD = conexion.getConnection();
 
@@ -208,16 +365,8 @@ public class ProductesDAO {
 	 */
 	public static boolean borrarProducte(String keyTotsProductes) {
 		
-		/*
-		if (TotsProductes.containsKey(keyTotsProductes)) {
-
-			TotsProductes.remove(keyTotsProductes);
-			return true;
-		} else {
-			return false;
-		}
-		*/
 		try {
+
 			String sql = "";
 
 			conexion = new conexion();
@@ -226,7 +375,9 @@ public class ProductesDAO {
 			
 
 			if (find(keyTotsProductes) != null) {
-				sql = "DELETE FROM producte	 WHERE idproductes=" + "'"+ keyTotsProductes +"'";
+	//			TotsProductes.remove(keyTotsProductes);
+
+				sql = "DELETE FROM producteabstract	WHERE idproductes=" + "'"+ keyTotsProductes +"'";
 				int rows = stmt.executeUpdate(sql);
 				if (rows == 1)
 					return true;
@@ -257,25 +408,18 @@ public class ProductesDAO {
 		for (ProducteAbstract prod : TotsProductes.values()) {
 			prod.imprimir();
 		}
-
 	}
 
 	public static void i​mprimirDescatalogats(LocalDate data) {
-
 		for (ProducteAbstract prod : TotsProductes.values()) {
-
 			if (prod.getDataFinal().compareTo(data) > 0) {
-
 				System.out.println("fecha hash " + prod.getDataFinal() + " fecha puesta " + data);
-
 				prod.imprimir();
-
 			}
-
 		}
-
 	}
 
+	
 	public static void guardar() {
 
 		FileOutputStream fos;

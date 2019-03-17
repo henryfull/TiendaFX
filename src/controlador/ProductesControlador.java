@@ -3,6 +3,7 @@ package controlador;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -100,18 +101,31 @@ public class ProductesControlador {
 			paks packs = new paks();
 
 			ProducteAbstract Object = ProductesDAO.returnProduct(idProducteInput.getText());
-			Object = ProductesDAO.find(idProducteInput.getText());
+			Object = ProductesDAO.findProduct(idProducteInput.getText());
 			
 			if(Object instanceof Producte) {
 				
-				System.out.println("es un producto");
+			}
+			else {
+				Object = ProductesDAO.findPacks(idProducteInput.getText());
+
+			}
+			System.out.println("pura");
+			
+			
+			
+			nombreProductoInput.setText(Object.getNom());
+			descripcionProductoInput.setText(Object.getDescripcio());
+			iniciCatalegInput.setValue(Object.getDataInici());
+			fiCatalegInput.setValue(Object.getDataFinal());
+			
+			
+			if(Object instanceof Producte) {
+				
+				System.out.println("es un productos");
 				producte = (Producte)Object;
 				producte.imprimir();
 
-				nombreProductoInput.setText(producte.getNom());
-				descripcionProductoInput.setText(producte.getDescripcio());
-				iniciCatalegInput.setValue(producte.getDataInici());
-				fiCatalegInput.setValue(producte.getDataFinal());
 				precioCompraInput.setText( Double.toString( producte.getPreu_compra() ) );
 				precioVentaInput.setText( Double.toString(producte.getPreu_venda()));
 				inputStockProductoInput.setText( Integer.toString(producte.getStock()));
@@ -124,15 +138,29 @@ public class ProductesControlador {
 				packs = (paks)Object;
 				packs.imprimir();
 				
-				nombreProductoInput.setText(packs.getNom());
-				descripcionProductoInput.setText(packs.getDescripcio());
-				iniciCatalegInput.setValue(packs.getDataInici());
-				fiCatalegInput.setValue(packs.getDataFinal());
+
 				tipusInput.setValue("packs");
 				labelPrecioVenta.setText(Double.toString(packs.getPreu_venda()) + " €");	
 				
 				Producte product = new Producte();
 
+				ResultSet listProducts = ProductesDAO.findProductsPacks(idProducteInput.getText());
+				
+				try {
+					if (listProducts.next()) {
+						
+						System.out.println("productos " + listProducts.getString("idproductes"));
+
+					}
+				}
+				catch (Exception er) {
+					// TODO: handle exception
+				}
+				
+				
+
+				
+				
 				for (Object productoAux : packs.getListaProductes()) {
 					
 				//	Producte producto = (Producte)productoAux;
@@ -140,6 +168,8 @@ public class ProductesControlador {
 					System.out.println( "ID producto: " +((Producte) productoAux).getIdProducte()  );
 					
 					listaProductos.setText(listaProductos.getText()+((Producte) productoAux).getIdProducte() + "\n");
+		//			listaProductos.setText(listaProductos.getText()+ ProductesDAO.findProductsPacks() + "\n");
+					
 					
 				}
 
@@ -181,6 +211,7 @@ public class ProductesControlador {
 
 			
 	    	if(tipusInput.getValue().equals("productes")) {
+	    		System.out.println("guardo producto");
 				Producte producte = new Producte();
 				if(isDatosValidos()){
 				
@@ -194,13 +225,15 @@ public class ProductesControlador {
 				producte.setPreu_venda( Double.parseDouble(precioVentaInput.getText() ) );		
 				producte.setStock( Integer.parseInt(inputStockProductoInput.getText() ) );	
 				ProductesDAO.afegirProducte(producte, idProducteInput.getText());
-				ProductesDAO.save(producte);
+				ProductesDAO.saveProducte(producte);
 
 				limpiarFormulario();
 				producte.imprimir();
 				}
 	    	}
 	    	else if(tipusInput.getValue().equals("packs")) {
+	    		System.out.println("guardo pack");
+
 				paks packs = new paks();
 	    		packs.setIdProducte(idProducteInput.getText());
 	    		packs.setNom( nombreProductoInput.getText() );	
@@ -215,15 +248,20 @@ public class ProductesControlador {
 				
 				for (int i = 0; i < ids.length; i++) {
 					product = (Producte)ProductesDAO.TotsProductes.get(ids[i]);		
+//					System.out.println(ids[i]);
+//					packs.addProducte(product);
+//					ProductesDAO.saveProductsPacks(idProducteInput.getText(),ids[i] );
 
-					packs.addProducte(product);
-
-					System.out.println(ids[i]);
 				}
 				
+				System.out.println( idProducteInput.getText() + "2");
+				ProductesDAO.saveProductsPacks(idProducteInput.getText(),"2");
+
 			//	System.out.println(listaProductos.getText());
 				
-				ProductesDAO.afegirProducte(packs, idProducteInput.getText());
+			//	ProductesDAO.afegirProducte(packs, idProducteInput.getText());
+				ProductesDAO.savePacks(packs);
+
 				limpiarFormulario();
 				packs.imprimir();
 	    		
