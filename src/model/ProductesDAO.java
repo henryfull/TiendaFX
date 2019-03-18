@@ -112,6 +112,7 @@ public class ProductesDAO {
 				producte.imprimir();
 				
 				sql = "UPDATE packs SET nom='" + producte.getNom() + "'" +
+						",descripcio='" + producte.getDescripcio() + "'" +
 						",dataInici='" + producte.getDataInici() + "'" +
 						",dataFinal='" + producte.getDataFinal() + "'" +
 						",preu_venda=" + producte.getPreu_venda() + 
@@ -229,16 +230,14 @@ public class ProductesDAO {
 			Statement stmt = conexionBD.createStatement();
 			ResultSet result = stmt.executeQuery("SELECT * FROM packs WHERE idproductes = " + "'"+ id +"'");
 			if (result.next()) {
-				
-				System.out.println("buscando " + result.getString("idproductes"));
-				
+								
 				p = new paks();
-				 p.setIdProducte(result.getString("idproductes"));
-				 p.setNom(result.getString("nom"));
-				 p.setDescripcio(result.getString("descripcio"));
-				 p.setDataInici( result.getObject("dataInici", LocalDate.class));
-				 p.setDataFinal( result.getObject("dataFinal", LocalDate.class));
-				 p.setPreu_venda(result.getInt("preu_venda"));
+				p.setIdProducte(result.getString("idproductes"));
+				p.setNom(result.getString("nom"));
+				p.setDescripcio(result.getString("descripcio"));
+				p.setDataInici( result.getObject("dataInici", LocalDate.class));
+				p.setDataFinal( result.getObject("dataFinal", LocalDate.class));
+				p.setPreu_venda(result.getInt("preu_venda"));
 				 
 
 			}

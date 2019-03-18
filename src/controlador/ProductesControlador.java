@@ -136,17 +136,27 @@ public class ProductesControlador {
 				
 				tipusInput.setValue("packs");
 				listaProductos.setText("");
-				labelPrecioVenta.setText(Double.toString(packs.getPreu_venda()) + " €");	
+				double precio_venta = 0;
 				
 				Producte product = new Producte();
 
+				// se recogen la listsa de productos que etan dentro de un pack
 				TreeSet<String> listProducts = ProductesDAO.findProductsPacks(idProducteInput.getText());
 
 				for (String object : listProducts) {
 					
-					listaProductos.setText(listaProductos.getText()+(object + "\n"));
+					// se obtiene el precio de cada uno de los productos de un pack
+					precio_venta += ProductesDAO.findProduct(object).getPreu_venda();
+					
+					// se añade la id de cada uno de los productos a la lista visual
+					listaProductos.setText(listaProductos.getText()+(object + "\n"));			
 				}
+				
+				// se añade el precio con descuento en un pack con la suma de sus productos
+				packs.descompte(precio_venta);
 
+				// se muestra el precio de venta con descuento
+				labelPrecioVenta.setText(Double.toString( packs.getPreu_venda() ) + " €");
 
 				for (Object productoAux : packs.getListaProductes()) {
 					
