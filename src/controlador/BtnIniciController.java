@@ -95,8 +95,6 @@ public class BtnIniciController extends Application {
 			ProductesControlador productesController = (ProductesControlador) loader.getController();
 			productesController.setVentana(stage);
 
-			System.out.println("conectando" + conexionBD);
-
 			productesController.setConexionBD(conexionBD);
 
 			// Programem l'event que s'executará quan es tanqui la finestra
@@ -162,7 +160,7 @@ public class BtnIniciController extends Application {
 
 		try {
 			if (conexionBD != null)
-				conexionBD.close();
+				System.out.println("cerrando conexion");conexionBD.close();
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}

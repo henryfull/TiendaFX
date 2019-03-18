@@ -64,11 +64,10 @@ public class ProductesControlador {
     @FXML private Button btnEliminarProductoPack;
     @FXML private Button btnAddProductoPack;
 
-    
-
     @FXML private TabPane tabs;
     @FXML private Tab tabProducte;
     @FXML private Tab tabPack;
+	private Object listProducts;
 
     
     
@@ -102,17 +101,13 @@ public class ProductesControlador {
 
 			ProducteAbstract Object = ProductesDAO.returnProduct(idProducteInput.getText());
 			Object = ProductesDAO.findProduct(idProducteInput.getText());
-			
+
 			if(Object instanceof Producte) {
-				
 			}
 			else {
 				Object = ProductesDAO.findPacks(idProducteInput.getText());
-
 			}
-			System.out.println("pura");
-			
-			
+
 			
 			nombreProductoInput.setText(Object.getNom());
 			descripcionProductoInput.setText(Object.getDescripcio());
@@ -120,9 +115,10 @@ public class ProductesControlador {
 			fiCatalegInput.setValue(Object.getDataFinal());
 			
 			
+			
 			if(Object instanceof Producte) {
 				
-				System.out.println("es un productos");
+				System.out.println("es un productoso");
 				producte = (Producte)Object;
 				producte.imprimir();
 
@@ -138,38 +134,27 @@ public class ProductesControlador {
 				packs = (paks)Object;
 				packs.imprimir();
 				
-
 				tipusInput.setValue("packs");
+				listaProductos.setText("");
 				labelPrecioVenta.setText(Double.toString(packs.getPreu_venda()) + " €");	
 				
 				Producte product = new Producte();
 
-				ResultSet listProducts = ProductesDAO.findProductsPacks(idProducteInput.getText());
-				
-				try {
-					if (listProducts.next()) {
-						
-						System.out.println("productos " + listProducts.getString("idproductes"));
+				TreeSet<String> listProducts = ProductesDAO.findProductsPacks(idProducteInput.getText());
 
-					}
+				for (String object : listProducts) {
+					
+					listaProductos.setText(listaProductos.getText()+(object + "\n"));
 				}
-				catch (Exception er) {
-					// TODO: handle exception
-				}
-				
-				
 
-				
-				
+
 				for (Object productoAux : packs.getListaProductes()) {
 					
-				//	Producte producto = (Producte)productoAux;
-					
+				/*	
+					Producte producto = (Producte)productoAux;
 					System.out.println( "ID producto: " +((Producte) productoAux).getIdProducte()  );
-					
 					listaProductos.setText(listaProductos.getText()+((Producte) productoAux).getIdProducte() + "\n");
-		//			listaProductos.setText(listaProductos.getText()+ ProductesDAO.findProductsPacks() + "\n");
-					
+				*/	
 					
 				}
 
@@ -240,27 +225,24 @@ public class ProductesControlador {
 	    		packs.setDescripcio( descripcionProductoInput.getText() );	
 				packs.setDataInici(iniciCatalegInput.getValue());
 				packs.setDataFinal(fiCatalegInput.getValue());
-	    		
-				Producte product = new Producte();
+				
+				// se guarda el pack
+				ProductesDAO.savePacks(packs);
 
+				
+				Producte product = new Producte();
 
 				String ids [] =  listaProductos.getText().split("\n");
 				
 				for (int i = 0; i < ids.length; i++) {
 					product = (Producte)ProductesDAO.TotsProductes.get(ids[i]);		
-//					System.out.println(ids[i]);
-//					packs.addProducte(product);
-//					ProductesDAO.saveProductsPacks(idProducteInput.getText(),ids[i] );
-
+					System.out.println("linea 255 pc " + ids[i]);
+				//	packs.addProducte(product);	
+					
+					// guardo los productos del pack
+					ProductesDAO.saveProductsPacks(idProducteInput.getText(),ids[i] );
+				
 				}
-				
-				System.out.println( idProducteInput.getText() + "2");
-				ProductesDAO.saveProductsPacks(idProducteInput.getText(),"2");
-
-			//	System.out.println(listaProductos.getText());
-				
-			//	ProductesDAO.afegirProducte(packs, idProducteInput.getText());
-				ProductesDAO.savePacks(packs);
 
 				limpiarFormulario();
 				packs.imprimir();
@@ -276,9 +258,12 @@ public class ProductesControlador {
 	 */
 	
 	 @FXML void onActionidProductoListaPack(ActionEvent event) {
+		Producte producte = new Producte();
 
 		ProducteAbstract Object = ProductesDAO.returnProduct(idProductoListaPack.getText());
 
+		Object = ProductesDAO.findProduct(idProductoListaPack.getText());
+				
 		if(Object instanceof Producte) {
 			
 			Producte producte2 = new Producte();
@@ -308,21 +293,31 @@ public class ProductesControlador {
 		
 		
 		ProducteAbstract Object = ProductesDAO.returnProduct(idProductoListaPack.getText());
+		Object = ProductesDAO.findProduct(idProductoListaPack.getText());
 
 		if(Object instanceof Producte) {
 			Producte product = new Producte();
 			product = (Producte) Object;
 			String textId = listaProductos.getText();
-			textId += idProductoListaPack.getText();
-			listaProductos.setText(textId + "\n");
-			nombreProductoListaPack.setText("Se ha añadido " + product.getNom());
+			
+			
+			System.out.println();
+			
+			if (textId.contains(idProductoListaPack.getText())) {
+				System.out.println("El " + product.getNom() + " ya esta introducido");
+				nombreProductoListaPack.setText("El " + product.getNom() + " ya esta introducido");
+			}
+			else {
+				textId += idProductoListaPack.getText();
+				listaProductos.setText(textId + "\n");
+				nombreProductoListaPack.setText("Se ha añadido " + product.getNom());
+			}
 
 		}
 		else {
 			nombreProductoListaPack.setText("No se puede añadir");
 
 		}
-		
     }
 	
 

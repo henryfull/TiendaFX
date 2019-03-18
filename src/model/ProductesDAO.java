@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 import model.ProducteAbstract;
 import model.paks;
@@ -24,79 +25,29 @@ import model.conexion;
 
 public class ProductesDAO {
 
-	private static Connection conexionBD;
-	public static conexion conexion;
+	public static conexion conexion = new conexion();
+	private static Connection conexionBD = conexion.getConnection();;
 
-	static BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
 
-	public static HashMap<String, ProducteAbstract> TotsProductes = new HashMap<String, ProducteAbstract>();
-
-	/**
-	 * Añade todos los valores a un producto
-	 * 
-	 * @param producte
-	 */
-	public static void afegirProducte(ProducteAbstract producte, String keyTotsProductes) {
-
-		if (TotsProductes.get(keyTotsProductes) != null) {
-
-			TotsProductes.put(keyTotsProductes, producte);
-
-		} else {
-			TotsProductes.put(keyTotsProductes, producte);
-
-		}
-
-		/*
-		 * try {
-		 * 
-		 * String sql = ""; Statement stmt = conexionBD.createStatement();
-		 * 
-		 * if (find(producte.getIdProducte()) == null){
-		 * 
-		 * sql =
-		 * "INSERT INTO producte (idproductes, nom, dataInici, dataFinal, preu_venda, preu_compra, stock, idproveidors  ) VALUES ("
-		 * +
-		 * 
-		 * producte.getIdProducte() + "," + producte.getNom() + "," +
-		 * producte.getDataInici() + "," + producte.getDataFinal() + "," +
-		 * 
-		 * 
-		 * ")";
-		 * 
-		 * 
-		 * 
-		 * } else{ sql = "UPDATE persones SET nom='" + persona.getNom() +
-		 * "',apellidos='" + persona.getApellidos() + "',email='" + persona.getEmail() +
-		 * "',telefon='" + persona.getTelefon() + "'" + " WHERE id=" + persona.getId();
-		 * } int rows = stmt.executeUpdate(sql); if (rows == 1) return true; else return
-		 * false;
-		 * 
-		 * } catch (SQLException e) { System.out.println(e.getMessage()); } return
-		 * false;
-		 */
-
-	}
-
+	// muestra por consola los datos de 
 	public static void showAll() {
 		conexion = new conexion();
 		conexionBD = conexion.getConnection();
 
 		try {
 			Statement stmt = conexionBD.createStatement();
-			ResultSet result = stmt.executeQuery("select * from producte");
+			ResultSet result = stmt.executeQuery("select * from producteabstract");
 			while (result.next()) {
-				Producte p = new Producte();
-
 				System.out.println(result.getString("idproductes") + " " + result.getString("nom"));
 
-				// p.imprimir();
+				
 			}
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
 	}
 
+	// Guarda un producto en la base de datos - productes
 	public static boolean saveProducte(Producte producte) {
 		try {
 
@@ -141,13 +92,13 @@ public class ProductesDAO {
 		return false;
 	}
 	
+	// Guarda un pack en la base de datos - packs
 	public static boolean savePacks(paks producte) {
 		try {
 
 			String sql = "";
 
-			conexion = new conexion();
-			conexionBD = conexion.getConnection();
+
 			Statement stmt = conexionBD.createStatement();
 
 			if (find(producte.getIdProducte()) == null) {
@@ -180,27 +131,26 @@ public class ProductesDAO {
 		}
 		return false;
 	}
+	
+	// Guarda los productos de los packs en la base de datos - listaproductes
 	public static boolean saveProductsPacks(String idpacks, String idproducte) {
-		System.out.println("hola mundo");
 		try {
 
 			String sql = "";
 
-			conexion = new conexion();
-			conexionBD = conexion.getConnection();
 			Statement stmt = conexionBD.createStatement();
 			
-			if (find(idpacks) == null) {
+			if (find(idpacks) != null) {
 		
-				sql = "INSERT INTO listaproductes (idpacks, idproductes ) VALUES \n" + 
+				sql = "INSERT INTO listaproductes (idpacks, idproducte ) VALUES \n" + 
 						" ( '"+idpacks+"', '"+idproducte+"'  )";
 			} 
 			else {
-				sql = "UPDATE listaproductes SET idproductes='" + idproducte + "'" +
+				sql = "UPDATE listaproductes SET idproducte='" + idproducte + "'" +
 						" WHERE idpacks=" + "'" +idpacks +"'";
 			}
 			
-			System.out.println("linea 202 " + sql);
+			System.out.println("linea 202 \n	 " + sql);
 
 			int rows = stmt.executeUpdate(sql);
 			if (rows == 1)
@@ -214,31 +164,35 @@ public class ProductesDAO {
 		return false;
 	}
 	
-	public static ResultSet findProductsPacks(String id) {
-		conexion = new conexion();
-		conexionBD = conexion.getConnection();
-		ResultSet result = null;
-		if (id == null || id.equals("")) {
-			return null;
-		}
+	// busca un producto en la lista de productos de los packs
+	public static TreeSet<String> findProductsPacks(String id) {
+		
 
-		Producte p = null;
+		ResultSet result = null;
+		
+		TreeSet<String> resultado = new TreeSet<String>();
+
+		
+		if (id == null || id.equals("")) { return null;}
+		paks p = null;
 		try {
 			Statement stmt = conexionBD.createStatement();
 			result = stmt.executeQuery("SELECT idproducte FROM listaproductes WHERE idpacks = " + "'"+ id +"'");
+			while (result.next()) {
+				resultado.add(result.getString("idproducte"));
+			}
 			
 		} catch (SQLException e)	 {
 			System.out.println("error de busqueda: " + e.getMessage());
 		}
 
-		return result;
+		return resultado;
 	}
 	
-	
-	
+	// busca un producto en la base de datos - producteabstract
+	// Devuelve la id
 	public static Producte find(String id) {
-		conexion = new conexion();
-		conexionBD = conexion.getConnection();
+		
 
 		if (id == null || id.equals("")) {
 			return null;
@@ -249,9 +203,7 @@ public class ProductesDAO {
 			Statement stmt = conexionBD.createStatement();
 			ResultSet result = stmt.executeQuery("SELECT * FROM producteabstract WHERE idproductes = " + "'"+ id +"'");
 			if (result.next()) {
-				
-				System.out.println("buscando " + result.getString("idproductes"));
-		
+						
 				p = new Producte();
 				p.setIdProducte(result.getString("idproductes"));
 				 
@@ -264,15 +216,15 @@ public class ProductesDAO {
 		return p;
 	}
 	
-	public static Producte findPacks(String id) {
-		conexion = new conexion();
-		conexionBD = conexion.getConnection();
+	// Busca un pack en la base de datos - Devuelve un objeto del tipo pack
+	public static paks findPacks(String id) {
+
 
 		if (id == null || id.equals("")) {
 			return null;
 		}
 
-		Producte p = null;
+		paks p = null;
 		try {
 			Statement stmt = conexionBD.createStatement();
 			ResultSet result = stmt.executeQuery("SELECT * FROM packs WHERE idproductes = " + "'"+ id +"'");
@@ -280,7 +232,7 @@ public class ProductesDAO {
 				
 				System.out.println("buscando " + result.getString("idproductes"));
 				
-				p = new Producte();
+				p = new paks();
 				 p.setIdProducte(result.getString("idproductes"));
 				 p.setNom(result.getString("nom"));
 				 p.setDescripcio(result.getString("descripcio"));
@@ -297,11 +249,10 @@ public class ProductesDAO {
 		return p;
 	}
 	
-
+	// Busca un producto en la base de datos - Devuelve un objeto del tipo producto
 	public static Producte findProduct(String id) {
-		conexion = new conexion();
-		conexionBD = conexion.getConnection();
 
+		
 		if (id == null || id.equals("")) {
 			return null;
 		}
@@ -329,10 +280,40 @@ public class ProductesDAO {
 		} catch (SQLException e) {
 			System.out.println("error de busqueda: " + e.getMessage());
 		}
-
+//		p.imprimir();
 		return p;
 	}
 
+	/*
+	 * #####################################################################################
+	 * Metodos que no trabajan con la base de datos y que conservo de lo que utilizaba antes
+	 * #####################################################################################
+	 */
+	
+	static BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
+
+	public static HashMap<String, ProducteAbstract> TotsProductes = new HashMap<String, ProducteAbstract>();
+
+	
+	/**
+	 * Añade todos los valores a un producto
+	 * 
+	 * @param producte
+	 */
+	public static void afegirProducte(ProducteAbstract producte, String keyTotsProductes) {
+
+		if (TotsProductes.get(keyTotsProductes) != null) {
+
+			TotsProductes.put(keyTotsProductes, producte);
+
+		} else {
+			TotsProductes.put(keyTotsProductes, producte);
+
+		}
+
+	}
+
+	
 	/**
 	 * Esta funcion buscar un producto en la tienda en base a una id, esta funcion
 	 * llama a otra que es la pedira la key al usuario por teclado
@@ -394,10 +375,6 @@ public class ProductesDAO {
 		
 	}
 	
-
-	
-	
-
 	/**
 	 * Muestra todos los valores de un objeto
 	 * 
@@ -439,7 +416,7 @@ public class ProductesDAO {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		showAll();
 	}
 
 	public static void obrir() throws IOException {
