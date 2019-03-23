@@ -1,6 +1,9 @@
 package model;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -247,6 +250,7 @@ public class ProductesDAO {
 
 		Producte p = null;
 		try {
+			
 			String sql = "SELECT * FROM producteabstract WHERE idproductes = ?";
 
 			PreparedStatement stmt = conexionBD.prepareStatement(sql);
@@ -432,6 +436,82 @@ public class ProductesDAO {
 		
 		
 	}
+	
+	
+	// Carga el fichero del comanda rebuda y actualiza el stock de los productos listados
+	public static void leerStock() throws ClassNotFoundException, SQLException {
+		
+		DataInputStream dis = null;
+		PreparedStatement stmt = null;
+		String sql = "UPDATE producte SET stock= stock + ? WHERE idproductes= ? ";
+		String producte = "";
+		int stock =0;
+		
+		try {
+			conexionBD.setAutoCommit(false);
+			
+			String nombrearchivo = "comanda_rebuda";
+
+			dis = new DataInputStream(new BufferedInputStream(new FileInputStream(nombrearchivo+ ".txt")));
+
+
+		while(true) {
+			
+			stmt = conexionBD.prepareStatement(sql);
+			
+			producte = dis.readUTF();
+			stock = dis.readInt();
+			
+			if (find(producte) != null) {
+	//			TotsProductes.remove(keyTotsProductes);
+	
+				stmt.setInt(1, stock);
+				stmt.setString(2, producte);
+				
+				System.out.println(stmt);
+				
+				int rows = stmt.executeUpdate();
+				
+				if (rows == 1)
+					System.out.println("todo ok");
+				else
+					System.out.println("todo mal");
+			}
+
+			conexionBD.commit();
+				
+		}
+		
+		}
+		catch (EOFException ex) {
+			conexionBD.rollback();
+
+            System.out.println("Fin de fichero  ");            
+
+        } catch (IOException ex) {
+
+            System.out.println("Error intentando leer del fichero 1  " + ex.getMessage());
+
+        } finally {
+        	
+        	conexionBD.setAutoCommit(true);
+            try {
+
+            	dis.close();
+
+            } catch (IOException ex3) {
+
+                System.out.println("Mensaje error cierre fichero: " + ex3.getMessage());
+
+            }
+
+        }
+		
+	}
+	
+	
+	
+	
 	
 	/**
 	 * Muestra todos los valores de un objeto

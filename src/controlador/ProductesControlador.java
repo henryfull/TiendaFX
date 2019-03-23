@@ -1,9 +1,17 @@
 package controlador;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -168,7 +176,7 @@ public class ProductesControlador {
 					
 				}
 
-
+				
 			}
 
 			else {
@@ -194,6 +202,8 @@ public class ProductesControlador {
 			productsTable.setItems(productData);
 */
 		}
+		
+
 		
 	}
 	
@@ -259,8 +269,13 @@ public class ProductesControlador {
 	    		
 			
 		}
+	    	
 		
 	}
+	
+
+	
+
 	
 	
 	/*
@@ -366,6 +381,24 @@ public class ProductesControlador {
 		
 		;
     }
+    
+
+    @FXML
+    void onActionStock(ActionEvent event) {
+
+    	try {
+			ProductesDAO.leerStock();
+		} catch (ClassNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	
+    }
+    
 
     /*
      * GUARDA TODOS LOS PRODUCTOS EN UN ARCHIVO
@@ -373,6 +406,7 @@ public class ProductesControlador {
     @FXML
     void onActionSortir(ActionEvent event) {
 		imprimirTodo(ProductesDAO.TotsProductes);
+		
 		ProductesDAO.guardar();
     }
 

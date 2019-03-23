@@ -114,5 +114,6 @@
       <Button layoutX="278.0" layoutY="639.0" mnemonicParsing="false" onAction="#onActionGuardar" text="Guardar" />
       <Button layoutX="367.0" layoutY="639.0" mnemonicParsing="false" onAction="#onActionEliminar" text="Eliminar" />
       <Button layoutX="457.0" layoutY="639.0" mnemonicParsing="false" onAction="#onActionSortir" text="Guardar y salir" />
+      <Button layoutX="25.0" layoutY="639.0" mnemonicParsing="false" onAction="#onActionStock" text="Actualizar Stock" />
    </children>
 </AnchorPane>
