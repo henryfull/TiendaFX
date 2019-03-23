@@ -220,7 +220,7 @@ public class ProductesControlador {
 				producte.setPreu_venda( Double.parseDouble(precioVentaInput.getText() ) );		
 				producte.setStock( Integer.parseInt(inputStockProductoInput.getText() ) );	
 				ProductesDAO.afegirProducte(producte, idProducteInput.getText());
-				ProductesDAO.saveProducte(producte);
+				ProductesDAO.save(producte);
 
 				limpiarFormulario();
 				producte.imprimir();
@@ -237,7 +237,7 @@ public class ProductesControlador {
 				packs.setDataFinal(fiCatalegInput.getValue());
 				
 				// se guarda el pack
-				ProductesDAO.savePacks(packs);
+				ProductesDAO.save(packs);
 
 				
 				Producte product = new Producte();

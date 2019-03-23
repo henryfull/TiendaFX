@@ -11,6 +11,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -24,19 +26,23 @@ import model.Producte;
 import model.conexion;
 
 public class ProductesDAO {
-
+	
 	public static conexion conexion = new conexion();
 	private static Connection conexionBD = conexion.getConnection();;
 
 
+
+
+	
 	// muestra por consola los datos de 
 	public static void showAll() {
 		conexion = new conexion();
 		conexionBD = conexion.getConnection();
 
 		try {
-			Statement stmt = conexionBD.createStatement();
-			ResultSet result = stmt.executeQuery("select * from producteabstract");
+			String sql = "select * from producteabstract";
+			PreparedStatement stmt = conexionBD.prepareStatement(sql);
+			ResultSet result = stmt.executeQuery();
 			while (result.next()) {
 				System.out.println(result.getString("idproductes") + " " + result.getString("nom"));
 
@@ -46,114 +52,151 @@ public class ProductesDAO {
 			System.out.println(e.getMessage());
 		}
 	}
-
-	// Guarda un producto en la base de datos - productes
-	public static boolean saveProducte(Producte producte) {
-		try {
-
-			String sql = "";
-
-			conexion = new conexion();
-			conexionBD = conexion.getConnection();
-			Statement stmt = conexionBD.createStatement();
-
-			if (findProduct(producte.getIdProducte()) == null) {
-		
-				sql = "INSERT INTO producte (idproductes, nom,descripcio, dataInici, dataFinal, preu_venda, preu_compra, stock  ) VALUES \n" + 
-						" ( '"+producte.getIdProducte()+"', '"+producte.getNom()+"' , '"+producte.getDescripcio()+"', '"+producte.getDataInici()+"', '"+producte.getDataFinal()+"', "+ producte.getPreu_venda()+ ", "+producte.getPreu_compra()+", "+producte.getStock()+"  )";
-
-			} 
-			
-			else {
-				
-				producte.imprimir();
-				
-				sql = "UPDATE producte SET nom='" + producte.getNom() + "'" +
-						",dataInici='" + producte.getDataInici() + "'" +
-						",dataFinal='" + producte.getDataFinal() + "'" +
-						",preu_venda=" + producte.getPreu_venda() + 
-						",preu_compra=" + producte.getPreu_compra() + 
-						",stock=" + producte.getStock() + 
-						",idproveidors=" + 4 + 
-						" WHERE idproductes=" + "'" +producte.getIdProducte() +"'";
-				
-			}
-			System.out.println(sql);
-
-			int rows = stmt.executeUpdate(sql);
-			if (rows == 1)
-				return true;
-			else
-				return false;
-
-		} catch (SQLException e) {
-			System.out.println("error insert o update" + e.getMessage());
-		}
-		return false;
-	}
 	
-	// Guarda un pack en la base de datos - packs
-	public static boolean savePacks(paks producte) {
-		try {
-
+	
+	// Guarda un producto en la base de datos - pack o producto
+		public static boolean save(ProducteAbstract object) {
 			String sql = "";
-
-
-			Statement stmt = conexionBD.createStatement();
-
-			if (find(producte.getIdProducte()) == null) {
-		
-				sql = "INSERT INTO packs (idproductes, nom,descripcio, dataInici, dataFinal, preu_venda  ) VALUES \n" + 
-						" ( '"+producte.getIdProducte()+"', '"+producte.getNom()+"' , '"+producte.getDescripcio()+"', '"+producte.getDataInici()+"', '"+producte.getDataFinal()+"', "+ producte.getPreu_venda()+ " )";
-			} 
 			
-			else {
+			try {
+				sql = "INSERT INTO producte values (?,?,?,?,?,?,?,?)";
+				PreparedStatement stmt = conexionBD.prepareStatement(sql);
+
+				if(object instanceof Producte) {
+					if (findProduct(object.getIdProducte()) == null) {
+
+						setQuery( stmt, object, "insert");
+						
+					} 
+					
+					else {
+	
+						sql = "UPDATE producte SET nom=?, descripcio=?,dataInici=?, dataFinal=? ,preu_venda=?, preu_compra=?,stock=?, idproveidors=? WHERE idproductes=?";
+						stmt = conexionBD.prepareStatement(sql);
+
+						setQuery( stmt, object, "update");
+
+					}
 				
-				producte.imprimir();
+				}
+				else if(object instanceof paks){
+
+					if (find(object.getIdProducte()) == null) {
+						sql = "INSERT INTO packs values (?,?,?,?,?,?)";
+						stmt = conexionBD.prepareStatement(sql);
+						setQuery( stmt, object, "insert");
+					} 
+					
+					else {
+		
+						sql = "UPDATE packs SET nom=?, descripcio=?, dataInici=?, dataFinal=? ,preu_venda=?  WHERE idproductes=?";
+						stmt = conexionBD.prepareStatement(sql);
+
+						setQuery( stmt, object, "update");
+
+					}
+				}
 				
-				sql = "UPDATE packs SET nom='" + producte.getNom() + "'" +
-						",descripcio='" + producte.getDescripcio() + "'" +
-						",dataInici='" + producte.getDataInici() + "'" +
-						",dataFinal='" + producte.getDataFinal() + "'" +
-						",preu_venda=" + producte.getPreu_venda() + 
-						" WHERE idproductes=" + "'" +producte.getIdProducte() +"'";
 				
+				System.out.println(sql);
+
+				System.out.println(stmt);
+
+				int rows = stmt.executeUpdate();
+				if (rows == 1)
+					return true;
+				else
+					return false;
+
+			} catch (SQLException e) {
+				System.out.println("error insert o update" + e.getMessage());
 			}
-			System.out.println(sql);
-
-			int rows = stmt.executeUpdate(sql);
-			if (rows == 1)
-				return true;
-			else
-				return false;
-
-		} catch (SQLException e) {
-			System.out.println("error insert o update" + e.getMessage());
+			return false;
 		}
-		return false;
-	}
+		
+		// Castea el tipo de producto que le esta llegando
+		public static Object returnObject(Object object) {
+
+			Producte producte = new Producte();
+			paks packs = new paks();
+			
+			if(object instanceof Producte) {
+				return producte = (Producte)object;
+			}
+			else {
+				return packs = (paks)object;
+			}
+	
+		}
+		
+		// Prepara la consulta en funcion de si es packs o productos y si hace un insert o un update
+		public static PreparedStatement setQuery(PreparedStatement stmt, Object object, String tipo) {
+			
+			Object producte = returnObject(object);
+			int i = 1;
+
+			try {
+				
+				if(tipo == "insert") stmt.setString(i++, ((ProducteAbstract) object).getIdProducte());
+				
+				stmt.setString(i++, ((ProducteAbstract) producte).getNom());
+				stmt.setString(i++, ((ProducteAbstract) producte).getDescripcio());
+				stmt.setDate(i++, Date.valueOf(((ProducteAbstract) producte).getDataInici()) );
+				stmt.setDate(i++, Date.valueOf(((ProducteAbstract) producte).getDataFinal()) );
+				if(object instanceof Producte) {
+					stmt.setDouble(i++, ((Producte) producte).getPreu_venda());
+					stmt.setDouble(i++, ((Producte) producte).getPreu_compra());
+					stmt.setInt(i++, ((Producte) producte).getStock());
+					stmt.setInt(i++, 4);
+
+				}
+				else {
+					stmt.setDouble(i++, ((paks) producte).getPreu_venda());
+
+				}
+				if(tipo == "update") stmt.setString(i++, ((ProducteAbstract) object).getIdProducte());
+
+	
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			return stmt;
+
+		}
+	
 	
 	// Guarda los productos de los packs en la base de datos - listaproductes
 	public static boolean saveProductsPacks(String idpacks, String idproducte) {
 		try {
 
-			String sql = "";
+			String sql = "INSERT INTO listaproductes VALUES (?,?)";
 
-			Statement stmt = conexionBD.createStatement();
-			
+			PreparedStatement stmt = conexionBD.prepareStatement(sql);
+			int i = 1;
+
 			if (find(idpacks) != null) {
 		
-				sql = "INSERT INTO listaproductes (idpacks, idproducte ) VALUES \n" + 
-						" ( '"+idpacks+"', '"+idproducte+"'  )";
+			///	sql = "INSERT INTO listaproductes (idpacks, idproducte ) VALUES  ( '"+idpacks+"', '"+idproducte+"'  )";
+				
+				stmt.setString(i++, idpacks);
+				stmt.setString(i++, idproducte);
+
 			} 
 			else {
-				sql = "UPDATE listaproductes SET idproducte='" + idproducte + "'" +
-						" WHERE idpacks=" + "'" +idpacks +"'";
+				
+				sql = "UPDATE listaproductes SET idproducte= ? WHERE idpacks= ? ";
+			//	sql = "UPDATE listaproductes SET idproducte='" + idproducte + "' WHERE idpacks=" + "'" +idpacks +"'";
+				stmt = conexionBD.prepareStatement(sql);
+				stmt.setString(i++, idproducte);
+				stmt.setString(i++, idpacks);
+
 			}
 			
-			System.out.println("linea 202 \n	 " + sql);
+			System.out.println("linea 202 \n	 " + stmt);
 
-			int rows = stmt.executeUpdate(sql);
+			int rows = stmt.executeUpdate();
 			if (rows == 1)
 				return true;
 			else
@@ -170,15 +213,17 @@ public class ProductesDAO {
 		
 
 		ResultSet result = null;
-		
 		TreeSet<String> resultado = new TreeSet<String>();
 
-		
 		if (id == null || id.equals("")) { return null;}
 		paks p = null;
 		try {
-			Statement stmt = conexionBD.createStatement();
-			result = stmt.executeQuery("SELECT idproducte FROM listaproductes WHERE idpacks = " + "'"+ id +"'");
+			String sql = "SELECT idproducte FROM listaproductes WHERE idpacks = ?";
+			PreparedStatement stmt = conexionBD.prepareStatement(sql);
+			
+			stmt.setString(1, id);
+			result = stmt.executeQuery();
+			
 			while (result.next()) {
 				resultado.add(result.getString("idproducte"));
 			}
@@ -189,6 +234,7 @@ public class ProductesDAO {
 
 		return resultado;
 	}
+	
 	
 	// busca un producto en la base de datos - producteabstract
 	// Devuelve la id
@@ -201,8 +247,13 @@ public class ProductesDAO {
 
 		Producte p = null;
 		try {
-			Statement stmt = conexionBD.createStatement();
-			ResultSet result = stmt.executeQuery("SELECT * FROM producteabstract WHERE idproductes = " + "'"+ id +"'");
+			String sql = "SELECT * FROM producteabstract WHERE idproductes = ?";
+
+			PreparedStatement stmt = conexionBD.prepareStatement(sql);
+			stmt.setString(1, id);
+			ResultSet result = stmt.executeQuery();
+	
+			
 			if (result.next()) {
 						
 				p = new Producte();
@@ -227,8 +278,12 @@ public class ProductesDAO {
 
 		paks p = null;
 		try {
-			Statement stmt = conexionBD.createStatement();
-			ResultSet result = stmt.executeQuery("SELECT * FROM packs WHERE idproductes = " + "'"+ id +"'");
+			
+			String sql = "SELECT * FROM packs WHERE idproductes = ?";
+			PreparedStatement stmt = conexionBD.prepareStatement(sql);
+			stmt.setString(1, id);
+			ResultSet result = stmt.executeQuery();
+
 			if (result.next()) {
 								
 				p = new paks();
@@ -258,8 +313,11 @@ public class ProductesDAO {
 
 		Producte p = null;
 		try {
-			Statement stmt = conexionBD.createStatement();
-			ResultSet result = stmt.executeQuery("SELECT * FROM producte WHERE idproductes = " + "'"+ id +"'");
+			
+			String sql = "SELECT * FROM producte WHERE idproductes = ?";
+			PreparedStatement stmt = conexionBD.prepareStatement(sql);
+			stmt.setString(1, id);
+			ResultSet result = stmt.executeQuery();
 			if (result.next()) {
 				
 				System.out.println("buscando " + result.getString("idproductes"));
@@ -347,18 +405,19 @@ public class ProductesDAO {
 		
 		try {
 
-			String sql = "";
 
 			conexion = new conexion();
 			conexionBD = conexion.getConnection();
-			Statement stmt = conexionBD.createStatement();
-			
+			String sql = "DELETE FROM producteabstract WHERE idproductes=?";
+			PreparedStatement stmt = conexionBD.prepareStatement(sql);
 
 			if (find(keyTotsProductes) != null) {
 	//			TotsProductes.remove(keyTotsProductes);
 
-				sql = "DELETE FROM producteabstract	WHERE idproductes=" + "'"+ keyTotsProductes +"'";
-				int rows = stmt.executeUpdate(sql);
+				stmt.setString(1, keyTotsProductes);
+
+				
+				int rows = stmt.executeUpdate();
 				if (rows == 1)
 					return true;
 				else
